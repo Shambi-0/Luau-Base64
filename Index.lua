@@ -22,35 +22,31 @@ SOFTWARE.
 
 --::]]
 
-local Base64 : {[string] : any?} = {
-	
+type Dictionary<Type> = {[string] : Type};
+type Array<Type> = {[number] : Type};
+
+local Base64 : Dictionary<any?> = {
 	["Dictionary"] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 };
 
 function Base64:Encode(Data : string) : string
-	
 	return (string.gsub(string.gsub(Data, '.', function(Character) : string
-		
 		local Result : string, Byte : number = '', string.byte(Character)
 
 		for Index : number = 8, 1, -1 do
-			
 			Result ..= if (bit32.band(Byte, (2 ^ Index) - 1) - bit32.band(Byte, (2 ^ (Index - 1)) - 1) > 0) then '1' else '0';
 		end;
 
 		return (Result);
 		
 	end) .. '0000', "%d%d%d?%d?%d?%d?", function(Character : string) : string
-		
-		if (#Character < 6) then 
-			
+		if (#Character < 6) then
 			return ('');
 		end;
 
 		local Counter : number = 0;
 
 		for Index : number = 1, 6 do
-			
 			Counter += if (string.sub(Character, Index, Index) == '1') then (2 ^ (6 - Index)) else 0;
 		end;
 
@@ -62,39 +58,31 @@ function Base64:Encode(Data : string) : string
 end;
 
 function Base64:Decode(Data : string) : string
-	
 	return (string.gsub(string.gsub(string.gsub(Data, '[^' .. self.Dictionary .. '=]', ''), '.', function(Character : string) : string
-		
-		if (Character == '=') then 
-			
+		if (Character == '=') then
 			return ('');
 		end;
 
 		local Result : string, Format : number = '', string.find(self.Dictionary, Character) - 1;
 
-		for Index : number = 6, 1, -1 do 
-			
+		for Index : number = 6, 1, -1 do
 			Result ..= if (bit32.band(Format, (2 ^ Index) - 1) - bit32.band(Format, (2 ^ (Index - 1)) - 1) > 0) then '1' else '0';
 		end;
 
 		return (Result);
 		
 	end), "%d%d%d?%d?%d?%d?%d?%d?", function(Pair : string) : string
-		
-		if (#Pair ~= 8) then 
-			
+		if (#Pair ~= 8) then
 			return ('');
 		end;
 
 		local Counter : number = 0;
 
 		for Index : number = 1, 8 do
-			
 			Counter += if (string.sub(Pair, Index, Index) == '1') then (2 ^ (7 - Index)) else 0;
 		end;
 
 		return (string.char(Counter));
-		
 	end));
 end;
 
